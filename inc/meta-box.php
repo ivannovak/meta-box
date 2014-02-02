@@ -74,7 +74,9 @@ if ( ! class_exists( 'RW_Meta_Box' ) )
 			$fields = self::get_fields( $this->fields );
 			foreach ( $fields as $field )
 			{
-				call_user_func( array( self::get_class_name( $field ), 'add_actions' ) );
+				if($class = self::get_class_name( $field )) {
+					call_user_func( array( $class, 'add_actions' ) );
+				}
 			}
 
 			// Add meta box
@@ -117,7 +119,9 @@ if ( ! class_exists( 'RW_Meta_Box' ) )
 					$has_clone = true;
 
 				// Enqueue scripts and styles for fields
-				call_user_func( array( self::get_class_name( $field ), 'admin_enqueue_scripts' ) );
+				if($class = self::get_class_name( $field )) {
+					call_user_func( array( $class, 'admin_enqueue_scripts' ) );
+				}
 			}
 
 			if ( $has_clone )
@@ -226,7 +230,9 @@ if ( ! class_exists( 'RW_Meta_Box' ) )
 
 			foreach ( $this->fields as $field )
 			{
-				call_user_func( array( self::get_class_name( $field ), 'show' ), $field, $saved );
+				if($class = self::get_class_name( $field )) {
+					call_user_func( array( $class, 'show' ), $field, $saved );
+				}
 			}
 
 			// Include validation settings for this meta-box
@@ -302,16 +308,20 @@ if ( ! class_exists( 'RW_Meta_Box' ) )
 				$new  = isset( $_POST[$name] ) ? $_POST[$name] : ( $field['multiple'] ? array() : '' );
 
 				// Allow field class change the value
-				$new = call_user_func( array( self::get_class_name( $field ), 'value' ), $new, $old, $post_id, $field );
+				if($class = self::get_class_name( $field )) {
+					$new = call_user_func( array( $class, 'value' ), $new, $old, $post_id, $field );
 
-				// Use filter to change field value
-				// 1st filter applies to all fields with the same type
-				// 2nd filter applies to current field only
-				$new = apply_filters( "rwmb_{$field['type']}_value", $new, $field, $old );
-				$new = apply_filters( "rwmb_{$name}_value", $new, $field, $old );
+					// Use filter to change field value
+					// 1st filter applies to all fields with the same type
+					// 2nd filter applies to current field only
+					$new = apply_filters( "rwmb_{$field['type']}_value", $new, $field, $old );
+					$new = apply_filters( "rwmb_{$name}_value", $new, $field, $old );
 
-				// Call defined method to save meta value, if there's no methods, call common one
-				call_user_func( array( self::get_class_name( $field ), 'save' ), $new, $old, $post_id, $field );
+					// Call defined method to save meta value, if there's no methods, call common one
+					if($class = self::get_class_name( $field )) {
+						call_user_func( array( $class, 'save' ), $new, $old, $post_id, $field );
+					}
+				}
 			}
 
 			// After save action
@@ -376,10 +386,12 @@ if ( ! class_exists( 'RW_Meta_Box' ) )
 				) );
 
 				// Allow field class add/change default field values
-				$field = call_user_func( array( self::get_class_name( $field ), 'normalize_field' ), $field );
+				if($class = self::get_class_name( $field )) {
+					$field = call_user_func( array( $class, 'normalize_field' ), $field );
 
-				if ( isset( $field['fields'] ) )
-					$field['fields'] = self::normalize_fields( $field['fields'] );
+					if ( isset( $field['fields'] ) )
+						$field['fields'] = self::normalize_fields( $field['fields'] );
+				}
 			}
 
 			return $fields;
